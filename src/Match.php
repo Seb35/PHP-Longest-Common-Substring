@@ -13,7 +13,7 @@ use JsonSerializable;
 class Match implements JsonSerializable, Serializable
 {
     /**
-     * @var string
+     * @var string|string[]
      */
     public $value;
 
@@ -44,15 +44,19 @@ class Match implements JsonSerializable, Serializable
      */
     public function __toString(): string
     {
-        return $this->value;
+        if (is_string($this->value)) {
+            return $this->value;
+        } else {
+            return implode('', $this->value);
+        }
     }
 
     /**
-     * @param string $value
+     * @param string|string[] $value
      *
      * @return Match
      */
-    public function setValue(string $value): Match
+    public function setValue($value): Match
     {
         $this->value = $value;
 

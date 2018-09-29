@@ -22,55 +22,88 @@ class Solver implements SolverInterface
     }
 
     /**
-     * @param array  $longestIndexes
-     * @param int    $longestLength
-     * @param string $stringA
-     * @param string $stringB
-     * @param array  $matrix
+     * @param array    $longestIndexes
+     * @param int      $longestLength
+     * @param string[] $tokensA
+     * @param int[][]  $matrix
+     * @param bool     $string
      *
-     * @return bool|string the extracted part of string or false on failure.
+     * @return string|string[] the extracted part of string.
      */
     protected function result(
         array $longestIndexes,
         int $longestLength,
-        string $stringA,
-        string $stringB,
-        array $matrix
+        array $tokensA,
+        array $matrix,
+        bool $string
     ) {
-        return count($longestIndexes) === 0 ? '' : mb_substr($stringA, $longestIndexes[0], $longestLength);
+        if ($string) {
+            return count($longestIndexes) === 0 ? '' : implode('', array_slice($tokensA, $longestIndexes[0], $longestLength));
+        } else {
+            return count($longestIndexes) === 0 ? [''] : array_slice($tokensA, $longestIndexes[0], $longestLength);
+        }
     }
 
     /**
-     * @param string $stringA
-     * @param string $stringB
+     * @param string|string[] $stringA
+     * @param string|string[] $stringB
+     * @param bool            $string
      *
-     * @return array|mixed
+     * @return string|string[]
      */
-    public function solve(string $stringA, string $stringB)
+    public function solve($stringA, $stringB, $string = true)
     {
-        if (func_num_args() > 2) {
+        $nbArgs = func_num_args();
+        if ($nbArgs > 2 && is_bool(func_get_arg($nbArgs-1))) {
+            $rstring = func_get_arg($nbArgs-1);
+            $nbArgs--;
+        } else {
+            $rstring = true;
+        }
+        if ($nbArgs > 2) {
             $arguments = func_get_args();
-            array_splice($arguments, 0, 2, [$this->solve($stringA, $stringB)]);
+            array_splice($arguments, 0, 2, [$this->solve($stringA, $stringB, $rstring)]);
 
             return call_user_func_array([$this, 'solve'], $arguments);
         }
 
-        $charsA = [];
-        $charsB = [];
-        for ($i=0; $i < max(mb_strlen($stringA), 1); $i++) {
-                $charsA[] = mb_substr($stringA, $i, 1);
-        }
-        for ($i=0; $i < max(mb_strlen($stringB), 1); $i++) {
-                $charsB[] = mb_substr($stringB, $i, 1);
+        if (is_string($stringA)) {
+            $tokensA = [];
+            for ($i=0; $i < max(mb_strlen($stringA), 1); $i++) {
+                $tokensA[] = mb_substr($stringA, $i, 1);
+            }
+        } else {
+            $tokensA = $stringA ?: [''];
+            $j = 0;
+            foreach ($tokensA as $i => $tokenA) {
+                if ($i !== $j++ || !is_string($tokenA)) {
+                    throw new \RuntimeException();
+                }
+            }
         }
 
-        $matrix = array_fill_keys(array_keys($charsA), array_fill_keys(array_keys($charsB), 0));
+        if (is_string($stringB)) {
+            $tokensB = [];
+            for ($i=0; $i < max(mb_strlen($stringB), 1); $i++) {
+                $tokensB[] = mb_substr($stringB, $i, 1);
+            }
+        } else {
+            $tokensB = $stringB ?: [''];
+            $i = 0;
+            foreach ($tokensB as $j => $tokenB) {
+                if ($j !== $i++ || !is_string($tokenB)) {
+                    throw new \RuntimeException();
+                }
+            }
+        }
+
+        $matrix = array_fill_keys(array_keys($tokensA), array_fill_keys(array_keys($tokensB), 0));
         $longestLength = 0;
         $longestIndexes = [];
 
-        foreach ($charsA as $i => $charA) {
-            foreach ($charsB as $j => $charB) {
-                if ($charA === $charB) {
+        foreach ($tokensA as $i => $tokenA) {
+            foreach ($tokensB as $j => $tokenB) {
+                if ($tokenA === $tokenB) {
                     if (0 === $i || 0 === $j) {
                         $matrix[$i][$j] = 1;
                     } else {
@@ -90,6 +123,6 @@ class Solver implements SolverInterface
             }
         }
 
-        return $this->result($longestIndexes, $longestLength, $stringA, $stringB, $matrix);
+        return $this->result($longestIndexes, $longestLength, $tokensA, $matrix, $rstring);
     }
 }

@@ -10,10 +10,11 @@ namespace Triun\LongestCommonSubstring;
 interface SolverInterface
 {
     /**
-     * @param string $stringA
-     * @param string $stringB
+     * @param string|string[] $stringA
+     * @param string|string[] $stringB
+     * @param bool            $string
      *
-     * @return string|mixed
+     * @return string
      */
-    public function solve(string $stringA, string $stringB);
+    public function solve($stringA, $stringB, $string = true);
 }

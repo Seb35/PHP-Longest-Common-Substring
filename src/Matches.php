@@ -76,7 +76,7 @@ class Matches implements ArrayAccess, Iterator, JsonSerializable, Countable
     /**
      * Get first value.
      *
-     * @return string
+     * @return string|string[]|null
      */
     public function firstValue()
     {
@@ -90,7 +90,7 @@ class Matches implements ArrayAccess, Iterator, JsonSerializable, Countable
     /**
      * Get all matches values.
      *
-     * @return string[]
+     * @return string[]|string[][]
      */
     public function values()
     {
@@ -100,7 +100,7 @@ class Matches implements ArrayAccess, Iterator, JsonSerializable, Countable
     }
 
     /**
-     * @return string[]
+     * @return string[]|string[][]
      */
     public function unique()
     {
@@ -112,7 +112,7 @@ class Matches implements ArrayAccess, Iterator, JsonSerializable, Countable
      */
     public function __toString()
     {
-        return $this->firstValue()?: '';
+        return (string) $this->first();
     }
 
     /**
